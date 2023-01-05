@@ -27,4 +27,15 @@ app.delete('/delete/:_id', async (req, resp) => {
   resp.send(result);
 });
 
+app.get('/list/:key', async (req, resp) => {
+  let result = await User.find({
+    $or: [
+      {
+        name: { $regex: req.params.key },
+      },
+    ],
+  });
+  console.log(result);
+  resp.send(result);
+});
 app.listen(8000);
