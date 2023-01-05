@@ -1,41 +1,26 @@
 const express = require('express');
+const multer = require('multer');
 require('./config');
 const User = require('./user');
 
 const app = express();
 app.use(express.json());
 
-app.post('/create', async (req, resp) => {
-  let data = new User(req.body);
-  let result = await data.save();
-  console.log(result);
-  resp.send(result);
-});
-app.get('/list', async (req, resp) => {
-  let result = await User.find();
-  console.log(result);
-  resp.send(result);
-});
-app.put('/update/:_id', async (req, resp) => {
-  let result = await User.updateOne(req.params, { $set: req.body });
-  console.log(result);
-  resp.send(result);
-});
-app.delete('/delete/:_id', async (req, resp) => {
-  let result = await User.deleteOne(req.params);
-  console.log(result);
-  resp.send(result);
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, callBack) {
+      callBack(null, 'uploads');
+    },
+    filename: function (req, file, callBack) {
+      const splitFileType = file.mimetype.split('/');
+      const extension = splitFileType[splitFileType.length - 1];
+      callBack(null, file.fieldname + '_' + Date.now() + '.' + extension);
+    },
+  }),
+}).single('user_file');
+
+app.post('/upload', upload, (req, resp) => {
+  resp.send('File uploaded');
 });
 
-app.get('/list/:key', async (req, resp) => {
-  let result = await User.find({
-    $or: [
-      {
-        name: { $regex: req.params.key },
-      },
-    ],
-  });
-  console.log(result);
-  resp.send(result);
-});
 app.listen(8000);
