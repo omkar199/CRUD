@@ -1,26 +1,17 @@
 const express = require('express');
-const multer = require('multer');
-require('./config');
-const User = require('./user');
+const Event = require('events');
 
 const app = express();
-app.use(express.json());
 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: function (req, file, callBack) {
-      callBack(null, 'uploads');
-    },
-    filename: function (req, file, callBack) {
-      const splitFileType = file.mimetype.split('/');
-      const extension = splitFileType[splitFileType.length - 1];
-      callBack(null, file.fieldname + '_' + Date.now() + '.' + extension);
-    },
-  }),
-}).single('user_file');
+const event = new Event();
 
-app.post('/upload', upload, (req, resp) => {
-  resp.send('File uploaded');
+event.on('countApi', () => {
+  console.log('event called');
+});
+
+app.get('/', (req, resp) => {
+  resp.send('api called');
+  event.emit('countApi');
 });
 
 app.listen(8000);
